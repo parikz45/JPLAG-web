@@ -24,31 +24,6 @@ export function NavMain({
 
       <SidebarGroupContent className="flex flex-col gap-2">
 
-        {/* Quick create section */}
-
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-
-            <SidebarMenuButton
-              tooltip="Quick Create"
-              className="min-w-8 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <CirclePlusIcon />
-              <span>Quick Create</span>
-            </SidebarMenuButton>
-
-            <Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <MailIcon />
-              <span className="sr-only">Inbox</span>
-            </Button>
-
-          </SidebarMenuItem>
-        </SidebarMenu>
-
         {/* Navigation items */}
 
         <SidebarMenu>

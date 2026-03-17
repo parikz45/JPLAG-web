@@ -24,6 +24,8 @@ import { Badge } from "@/components/ui/badge"
 
 import ThemeToggle from "../themetoggle/Themetoggle"
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000"
+
 export default function History() {
 
     const [runs, setRuns] = useState([])
@@ -32,7 +34,7 @@ export default function History() {
     const fetchRuns = async () => {
 
         try {
-            const res = await fetch("http://localhost:5000/api/history")
+            const res = await fetch(`${API}/api/history`)
             const data = await res.json()
             setRuns(data)
             setLoading(false)
@@ -46,9 +48,19 @@ export default function History() {
         fetchRuns()
     }, [])
 
-    const openReport = (run) => {
-        const url = `http://localhost:5000/reports/${run.path}/index.html`
-        window.open(url, "_blank")
+    const downloadReport = (run) => {
+
+        const url = `${API}/reports/${run.zip}`
+
+        const link = document.createElement("a")
+        link.href = url
+        link.download = run.zip
+
+        document.body.appendChild(link)
+        link.click()
+
+        document.body.removeChild(link)
+
     }
 
     return (
@@ -57,7 +69,7 @@ export default function History() {
 
             <AppSidebar />
 
-            <SidebarInset className="p-8">
+            <SidebarInset className="p-8 flex items-center">
 
                 <div className="w-full max-w-6xl space-y-6">
 
@@ -89,7 +101,8 @@ export default function History() {
 
                             {loading ? (
 
-                                <div className="text-muted-foreground">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
                                     Loading runs...
                                 </div>
 
@@ -154,9 +167,9 @@ export default function History() {
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        onClick={() => openReport(run)}
+                                                        onClick={() => downloadReport(run)}
                                                     >
-                                                        Open Report
+                                                        Download ZIP
                                                     </Button>
 
                                                 </TableCell>

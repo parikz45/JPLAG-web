@@ -11,222 +11,309 @@ import {
 } from "@/components/ui/card"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { useJplag } from "@/context/JplagContext"
+import {
+    ToastProvider,
+    Toast,
+    ToastTitle,
+    ToastDescription,
+    ToastViewport,
+    ToastClose
+} from "@/components/ui/local-toast"
 
 import ThemeToggle from "../themetoggle/Themetoggle"
 
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000"
+
 export default function Dashboard() {
 
-    const [folder, setFolder] = useState("")
+    const [toastOpen, setToastOpen] = useState(false)
+    const [toastData, setToastData] = useState({
+        title: "",
+        description: "",
+        variant: "default"
+    })
     const [running, setRunning] = useState(false)
-    const [language, setLanguage] = useState("java")
-    const [token, setToken] = useState(9)
-    const [dragActive, setDragActive] = useState(false)
+    const [jarFile, setJarFile] = useState(null)
+    const [submissions, setSubmissions] = useState([])
 
-    const handleDragOver = (e) => {
-        e.preventDefault()
-        setDragActive(true)
+    const { config } = useJplag()
+
+    const handleJarUpload = (e) => {
+        setJarFile(e.target.files[0])
     }
 
-    const handleDragLeave = () => {
-        setDragActive(false)
+    const handleSubmissions = (e) => {
+        setSubmissions(Array.from(e.target.files))
     }
 
-    const handleDrop = (e) => {
-        e.preventDefault()
-        setDragActive(false)
+    const removeJar = () => setJarFile(null)
 
-        const files = e.dataTransfer.files
-        console.log("Dropped files:", files)
+    const removeSubmissions = () => setSubmissions([])
+
+    const openViewer = () => {
+        window.open("https://jplag.github.io/JPlag/", "_blank")
     }
 
-    const handleRun = () => {
+    const handleRun = async () => {
+
+        if (!jarFile || submissions.length === 0) {
+            alert("Jar file and submissions required")
+            return
+        }
+
         setRunning(true)
 
-        setTimeout(() => {
+        try {
+            const formData = new FormData()
+            formData.append("jar", jarFile)
+            formData.append("config", JSON.stringify(config))
+
+            submissions.forEach(file =>
+                formData.append("submissions", file)
+            )
+
+            const res = await fetch(`${API}/api/run`, {
+                method: "POST",
+                body: formData
+            })
+
+            if (!res.ok) throw new Error("Run failed")
+
+            const data = await res.json()
+
+            if (data.success) {
+
+                const zipUrl = `${API}/reports/${data.zip}`
+
+                // force download
+                const link = document.createElement("a")
+                link.href = zipUrl
+                link.download = data.zip
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+
+                setToastData({
+                    title: "Report Downloaded",
+                    description: "Upload the ZIP in JPlag viewer to see the results.",
+                    variant: "success"
+                })
+
+                setToastOpen(true)
+            }
+
+        }
+        catch (err) {
+            console.error(err)
+            setToastData({
+                title: "JPlag Run Failed",
+                description: "Something went wrong while executing JPlag.",
+                variant: "error"
+            })
+
+            setToastOpen(true)
+        }
+        finally {
             setRunning(false)
-        }, 5000)
+        }
     }
 
     return (
-
         <div className="flex min-h-screen w-full">
-
             <AppSidebar />
 
-            <SidebarInset className="p-8 space-y-6">
+            <SidebarInset className="p-12 space-y-8">
 
                 {/* Header */}
+
                 <div className="relative flex items-center justify-center">
 
                     <h1 className="text-3xl font-bold">
                         JPlag Runner
                     </h1>
 
-                    <div className="absolute right-0">
+                    <div className="absolute right-0 flex gap-2 ">
+                        <Button
+                            variant="outline"
+                            onClick={openViewer}
+                            className="cursor-pointer"
+                        >
+                            Open JPlag Viewer
+                        </Button>
+
                         <ThemeToggle />
                     </div>
 
                 </div>
 
-                {/* Centered content */}
                 <div className="flex justify-center">
-                    <div className="w-full max-w-4xl space-y-6">
 
-                        {/* Run Card */}
+                    <div className="w-full max-w-4xl">
+
                         <Card>
 
                             <CardHeader>
-                                <CardTitle>Run JPlag Analysis</CardTitle>
+                                <CardTitle>
+                                    Run JPlag Analysis
+                                </CardTitle>
                             </CardHeader>
 
-                            <CardContent className="space-y-6">
+                            <CardContent className="space-y-8">
 
-                                {/* Drag Drop */}
-                                <div
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                    className={`border-dashed border rounded-lg p-8 text-center flex flex-col items-center justify-center gap-3
-    ${dragActive ? "bg-muted border-primary" : "text-muted-foreground"}
-  `}
-                                >
-                                    <p>Drag & Drop submissions folder here</p>
+                                {/* Jar Upload */}
 
-                                    <span className="text-sm">or</span>
+                                <div className="space-y-3">
 
-                                    <label className="cursor-pointer">
+                                    <Label>Upload JPlag Jar *</Label>
 
-                                        <span className="px-4 py-2 border rounded-md bg-background hover:bg-muted transition">
-                                            Choose Folder
+                                    <label className="flex flex-col items-center justify-center border border-dashed rounded-lg p-6 cursor-pointer hover:bg-muted transition">
+
+                                        <span className="text-sm text-muted-foreground">
+                                            Click to upload JPlag jar
                                         </span>
 
                                         <input
                                             type="file"
-                                            webkitdirectory=""
-                                            directory=""
+                                            accept=".jar"
                                             className="hidden"
+                                            onChange={handleJarUpload}
                                         />
 
                                     </label>
 
+                                    {jarFile && (
+
+                                        <div className="flex items-center justify-between border rounded-md px-4 py-2">
+
+                                            <span className="text-sm">
+                                                📦 {jarFile.name}
+                                            </span>
+
+                                            <button
+                                                onClick={removeJar}
+                                                className="text-red-500 text-sm cursor-pointer"
+                                            >
+                                                ✕
+                                            </button>
+
+                                        </div>
+
+                                    )}
+
                                 </div>
 
                                 <Separator />
 
-                                {/* Folder Path */}
-                                <div className="space-y-2">
-                                    <Label>Or Enter Folder Path</Label>
+                                {/* Submissions */}
 
-                                    <Input
-                                        placeholder="e.g. C:/submissions/assignment1"
-                                        value={folder}
-                                        onChange={(e) => setFolder(e.target.value)}
-                                    />
+                                <div className="space-y-3">
+
+                                    <Label>Upload Submissions Folder *</Label>
+
+                                    <label className="flex flex-col items-center justify-center border border-dashed rounded-lg p-8 cursor-pointer hover:bg-muted transition">
+
+                                        <span className="text-sm text-muted-foreground">
+                                            Click to upload submissions folder
+                                        </span>
+
+                                        <input
+                                            type="file"
+                                            webkitdirectory
+                                            multiple
+                                            className="hidden"
+                                            onChange={handleSubmissions}
+                                        />
+
+                                    </label>
+
+                                    {submissions.length > 0 && (
+
+                                        <div className="flex items-center justify-between border rounded-md px-4 py-2">
+
+                                            <span className="text-sm">
+                                                📁 {submissions.length} files selected
+                                            </span>
+
+                                            <button
+                                                onClick={removeSubmissions}
+                                                className="text-red-500 text-sm cursor-pointer"
+                                            >
+                                                ✕
+                                            </button>
+
+                                        </div>
+
+                                    )}
+
                                 </div>
 
                                 <Separator />
+
+                                {/* Run */}
 
                                 <Button
                                     onClick={handleRun}
-                                    disabled={running}
-                                    className="w-full"
+                                    disabled={running || !jarFile || submissions.length === 0}
+                                    className={`w-full ${running || !jarFile || submissions.length === 0
+                                        ? "cursor-not-allowed"
+                                        : "cursor-pointer"
+                                        }`}
                                 >
+
                                     {running ? "Running JPlag..." : "Run JPlag"}
+
                                 </Button>
 
                                 {running && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
+
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+
                                         <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                                        Running plagiarism detection (30-60 seconds)
+
+                                        Running plagiarism detection (This may take a few seconds)
+
                                     </div>
+
                                 )}
 
                             </CardContent>
 
                         </Card>
 
-                        {/* Run History */}
-                        <Card>
-
-                            <CardHeader>
-                                <CardTitle>Previous Runs</CardTitle>
-                            </CardHeader>
-
-                            <Card>
-
-                                <CardHeader>
-                                    <CardTitle>Previous Runs</CardTitle>
-                                </CardHeader>
-
-                                <CardContent className="divide-y">
-
-                                    {/* Run */}
-                                    <div className="flex items-center justify-between py-3">
-
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Run #12</span>
-
-                                            <span className="text-sm text-muted-foreground">
-                                                Java • 120 files • 2 min ago
-                                            </span>
-                                        </div>
-
-                                        <Button size="sm" variant="outline">
-                                            Open
-                                        </Button>
-
-                                    </div>
-
-                                    {/* Run */}
-                                    <div className="flex items-center justify-between py-3">
-
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Run #11</span>
-
-                                            <span className="text-sm text-muted-foreground">
-                                                Java • 98 files • 10 min ago
-                                            </span>
-                                        </div>
-
-                                        <Button size="sm" variant="outline">
-                                            Open
-                                        </Button>
-
-                                    </div>
-
-                                    {/* Run */}
-                                    <div className="flex items-center justify-between py-3">
-
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">Run #10</span>
-
-                                            <span className="text-sm text-muted-foreground">
-                                                Python • 76 files • 1 hr ago
-                                            </span>
-                                        </div>
-
-                                        <Button size="sm" variant="outline">
-                                            Open
-                                        </Button>
-
-                                    </div>
-
-                                </CardContent>
-
-                            </Card>
-
-                        </Card>
-
                     </div>
+
                 </div>
 
             </SidebarInset>
+            <ToastProvider>
+                <Toast
+                    open={toastOpen}
+                    onOpenChange={setToastOpen}
+                    variant={toastData.variant}
+                >
 
+                    <div className="grid gap-1">
+
+                        <ToastTitle>{toastData.title}</ToastTitle>
+
+                        <ToastDescription>
+                            {toastData.description}
+                        </ToastDescription>
+
+                    </div>
+
+                    <ToastClose />
+
+                </Toast>
+
+                <ToastViewport />
+
+            </ToastProvider>
         </div>
+
     )
+
 }

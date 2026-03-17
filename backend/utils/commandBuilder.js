@@ -2,7 +2,7 @@ exports.buildCommand = (config, resultPath) => {
 
   const args = []
 
-  args.push("-M", "RUN_AND_VIEW")
+  args.push("-M", "RUN")
 
   args.push("-l", config.language)
 

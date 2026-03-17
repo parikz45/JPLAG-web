@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "react-router-dom"
 
 import {
   SidebarGroup,
@@ -18,24 +19,55 @@ export function NavSecondary({
     title: string
     url: string
     icon: React.ReactNode
+    external?: boolean
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+
   return (
+
     <SidebarGroup {...props}>
+
       <SidebarGroupContent>
+
         <SidebarMenu>
+
           {items.map((item) => (
+
             <SidebarMenuItem key={item.title}>
+
               <SidebarMenuButton asChild>
-                <a href={item.url}>
-                  {item.icon}
-                  <span>{item.title}</span>
-                </a>
+
+                {item.external ? (
+
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </a>
+
+                ) : (
+
+                  <Link to={item.url}>
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+
+                )}
+
               </SidebarMenuButton>
+
             </SidebarMenuItem>
+
           ))}
+
         </SidebarMenu>
+
       </SidebarGroupContent>
+
     </SidebarGroup>
+
   )
 }

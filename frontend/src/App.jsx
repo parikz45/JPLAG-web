@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import AdvancedOptions from "./components/pages/advancedOptions"
 import { ThemeProvider } from "./components/theme-provider"
 import History from "./components/pages/history"
+import { JplagProvider } from "./context/jplagContext"
 
 function App() {
   return (
@@ -13,11 +14,13 @@ function App() {
       <BrowserRouter>
         <TooltipProvider>
           <SidebarProvider>
-            <Routes>
-              <Route path="/" element={<Dashboard />}></Route>
-              <Route path="/advanced" element={<AdvancedOptions />}></Route>
-              <Route path="/history" element={<History/>}></Route>
-            </Routes>
+            <JplagProvider>
+              <Routes>
+                <Route path="/" element={<Dashboard />}></Route>
+                <Route path="/advanced" element={<AdvancedOptions />}></Route>
+                <Route path="/history" element={<History />}></Route>
+              </Routes>
+            </JplagProvider>
           </SidebarProvider>
         </TooltipProvider>
       </BrowserRouter>

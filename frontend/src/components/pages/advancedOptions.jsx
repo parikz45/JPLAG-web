@@ -1,5 +1,3 @@
-import { useState } from "react"
-
 import { SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
@@ -25,21 +23,11 @@ import {
 
 import ThemeToggle from "@/components/themetoggle/Themetoggle"
 
+import { useJplag } from "@/context/JplagContext"
+
 export default function AdvancedOptions() {
 
-  const [language, setLanguage] = useState("java")
-  const [minTokens, setMinTokens] = useState(9)
-  const [similarity, setSimilarity] = useState(0)
-  const [shownComparisons, setShownComparisons] = useState(2500)
-  const [normalize, setNormalize] = useState(false)
-
-  const [clusterEnabled, setClusterEnabled] = useState(true)
-  const [clusterAlg, setClusterAlg] = useState("agglomerative")
-
-  const [subdirectory, setSubdirectory] = useState("")
-  const [suffixes, setSuffixes] = useState("")
-
-  const [showAllComparisons, setShowAllComparisons] = useState(false)
+  const { config, setConfig } = useJplag()
 
   return (
 
@@ -63,19 +51,63 @@ export default function AdvancedOptions() {
 
           </div>
 
-          {/* Language & Sensitivity */}
+          {/* Language */}
 
           <Card>
 
             <CardHeader>
 
               <CardTitle>
-                Language & Sensitivity
+                Language
               </CardTitle>
 
               <CardDescription>
-                Configure language and token sensitivity
+                Select programming language
               </CardDescription>
+
+            </CardHeader>
+
+            <CardContent>
+
+              <Select
+                value={config.language}
+                onValueChange={(value) =>
+                  setConfig({ ...config, language: value })
+                }
+              >
+
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+
+                  <SelectItem value="java-cpg">Java (CPG)</SelectItem>
+                  <SelectItem value="python3">Python</SelectItem>
+                  <SelectItem value="cpp">C++</SelectItem>
+                  <SelectItem value="c">C</SelectItem>
+                  <SelectItem value="javascript">JavaScript</SelectItem>
+                  <SelectItem value="typescript">TypeScript</SelectItem>
+                  <SelectItem value="go">Go</SelectItem>
+                  <SelectItem value="rust">Rust</SelectItem>
+
+                </SelectContent>
+
+              </Select>
+
+            </CardContent>
+
+          </Card>
+
+          {/* Sensitivity */}
+
+          <Card>
+
+            <CardHeader>
+
+              <CardTitle>
+                Sensitivity
+              </CardTitle>
 
             </CardHeader>
 
@@ -83,44 +115,35 @@ export default function AdvancedOptions() {
 
               <div className="space-y-2">
 
-                <Label>Language</Label>
+                <Label>Min Token Match</Label>
 
-                <Select value={language} onValueChange={setLanguage}>
-
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-
-                  <SelectContent>
-
-                    <SelectItem value="java">Java</SelectItem>
-                    <SelectItem value="python3">Python</SelectItem>
-                    <SelectItem value="cpp">C++</SelectItem>
-                    <SelectItem value="c">C</SelectItem>
-                    <SelectItem value="javascript">JavaScript</SelectItem>
-                    <SelectItem value="typescript">TypeScript</SelectItem>
-                    <SelectItem value="kotlin">Kotlin</SelectItem>
-                    <SelectItem value="go">Go</SelectItem>
-                    <SelectItem value="rust">Rust</SelectItem>
-                    <SelectItem value="swift">Swift</SelectItem>
-                    <SelectItem value="scala">Scala</SelectItem>
-                    <SelectItem value="scheme">Scheme</SelectItem>
-                    <SelectItem value="text">Text</SelectItem>
-
-                  </SelectContent>
-
-                </Select>
+                <Input
+                  type="number"
+                  value={config.minTokens}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      minTokens: Number(e.target.value)
+                    })
+                  }
+                />
 
               </div>
 
               <div className="space-y-2">
 
-                <Label>Min Token Match</Label>
+                <Label>Similarity Threshold</Label>
 
                 <Input
                   type="number"
-                  value={minTokens}
-                  onChange={(e) => setMinTokens(e.target.value)}
+                  step="0.1"
+                  value={config.similarityThreshold}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      similarityThreshold: Number(e.target.value)
+                    })
+                  }
                 />
 
               </div>
@@ -129,7 +152,7 @@ export default function AdvancedOptions() {
 
           </Card>
 
-          {/* Comparison Settings */}
+          {/* Comparison */}
 
           <Card>
 
@@ -139,56 +162,32 @@ export default function AdvancedOptions() {
                 Comparison Settings
               </CardTitle>
 
-              <CardDescription>
-                Control how similarities are detected
-              </CardDescription>
-
             </CardHeader>
 
-            <CardContent className="grid grid-cols-2 gap-6">
+            <CardContent className="space-y-6">
 
-              <div className="space-y-2">
-
-                <Label>Similarity Threshold</Label>
-
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={similarity}
-                  onChange={(e) => setSimilarity(e.target.value)}
-                />
-
-              </div>
-
-              <div className="space-y-2">
-
-                <Label>Shown Comparisons</Label>
-
-                <Input
-                  type="number"
-                  value={shownComparisons}
-                  onChange={(e) => setShownComparisons(e.target.value)}
-                />
-
-              </div>
-
-              <div className="flex items-center justify-between col-span-2">
-
-                <Label>Show All Comparisons</Label>
-
-                <Switch
-                  checked={showAllComparisons}
-                  onCheckedChange={setShowAllComparisons}
-                />
-
-              </div>
-              <div className="flex items-center justify-between col-span-2">
+              <div className="flex items-center justify-between">
 
                 <Label>Normalize Tokens</Label>
 
                 <Switch
-                  checked={normalize}
-                  onCheckedChange={setNormalize}
+                  checked={config.normalize}
+                  onCheckedChange={(v) =>
+                    setConfig({ ...config, normalize: v })
+                  }
+                />
+
+              </div>
+
+              <div className="flex items-center justify-between">
+
+                <Label>Show All Comparisons</Label>
+
+                <Switch
+                  checked={config.showAllComparisons}
+                  onCheckedChange={(v) =>
+                    setConfig({ ...config, showAllComparisons: v })
+                  }
                 />
 
               </div>
@@ -207,10 +206,6 @@ export default function AdvancedOptions() {
                 Clustering
               </CardTitle>
 
-              <CardDescription>
-                Group similar submissions automatically
-              </CardDescription>
-
             </CardHeader>
 
             <CardContent className="space-y-6">
@@ -220,87 +215,42 @@ export default function AdvancedOptions() {
                 <Label>Enable Clustering</Label>
 
                 <Switch
-                  checked={clusterEnabled}
-                  onCheckedChange={setClusterEnabled}
+                  checked={config.clusterEnabled}
+                  onCheckedChange={(v) =>
+                    setConfig({ ...config, clusterEnabled: v })
+                  }
                 />
 
               </div>
 
-              {clusterEnabled && (
+              {config.clusterEnabled && (
 
-                <div className="space-y-2">
+                <Select
+                  value={config.clusterAlgorithm}
+                  onValueChange={(v) =>
+                    setConfig({ ...config, clusterAlgorithm: v })
+                  }
+                >
 
-                  <Label>Clustering Algorithm</Label>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
 
-                  <Select value={clusterAlg} onValueChange={setClusterAlg}>
+                  <SelectContent>
 
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectItem value="AGGLOMERATIVE">
+                      Agglomerative
+                    </SelectItem>
 
-                    <SelectContent>
+                    <SelectItem value="SPECTRAL">
+                      Spectral
+                    </SelectItem>
 
-                      <SelectItem value="agglomerative">
-                        Agglomerative
-                      </SelectItem>
+                  </SelectContent>
 
-                      <SelectItem value="spectral">
-                        Spectral
-                      </SelectItem>
-
-                    </SelectContent>
-
-                  </Select>
-
-                </div>
+                </Select>
 
               )}
-
-            </CardContent>
-
-          </Card>
-
-          {/* Submission Structure */}
-
-          <Card>
-
-            <CardHeader>
-
-              <CardTitle>
-                Submission Structure
-              </CardTitle>
-
-              <CardDescription>
-                Configure how submissions are parsed
-              </CardDescription>
-
-            </CardHeader>
-
-            <CardContent className="grid grid-cols-2 gap-6">
-
-              <div className="space-y-2">
-
-                <Label>Subdirectory</Label>
-
-                <Input
-                  placeholder="Example: src"
-                  value={subdirectory}
-                  onChange={(e) => setSubdirectory(e.target.value)}
-                />
-
-              </div>
-
-              <div className="space-y-2">
-
-                <Label>File Suffixes</Label>
-
-                <Input
-                  placeholder=".java,.cpp,.py"
-                  value={suffixes}
-                  onChange={(e) => setSuffixes(e.target.value)}
-                />
-
-              </div>
 
             </CardContent>
 
@@ -311,5 +261,6 @@ export default function AdvancedOptions() {
       </SidebarInset>
 
     </div>
+
   )
 }
