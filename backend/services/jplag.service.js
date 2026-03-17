@@ -48,9 +48,10 @@ exports.executeJplag = (config, jarPath, submissionsPath, resultPath) => {
         args.push(submissionsPath)
 
         console.log("Running command:")
-        console.log("java", args.join(" "))
+        console.log("./jdk-17/bin/java", args.join(" "))
+        console.log("JAVA PATH:", "./jdk-17/bin/java")
 
-        const process = spawn("java", args)
+        const process = spawn("./jdk-17/bin/java", args)
 
         process.stdout.on("data", (data) => {
             console.log(data.toString())
