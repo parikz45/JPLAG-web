@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { useJplag } from "@/context/JplagContext"
+import { useJplag } from "../../context/jplagContext"
 import {
     ToastProvider,
     Toast,
