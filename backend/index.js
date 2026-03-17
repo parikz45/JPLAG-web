@@ -8,7 +8,9 @@ const historyRoutes = require("./routes/history.routes")
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+    origin: "https://jplag-web.vercel.app"
+}))
 app.use(express.json())
 
 const storagePath = path.join(__dirname, "storage")
