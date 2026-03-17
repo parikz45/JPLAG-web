@@ -23,7 +23,7 @@ import {
 
 import ThemeToggle from "@/components/themetoggle/Themetoggle"
 
-import { useJplag } from "@/context/JplagContext"
+import { useJplag } from "../../context/jplagContext"
 
 export default function AdvancedOptions() {
 
