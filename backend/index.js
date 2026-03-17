@@ -8,13 +8,9 @@ const historyRoutes = require("./routes/history.routes")
 
 const app = express()
 
-app.use(cors({
-  origin: "https://jplag-web.vercel.app",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}))
+app.use(cors())
+app.options("*", cors())
 
-app.options(/.*/, cors())
 app.use(express.json())
 
 const storagePath = path.join(__dirname, "storage")
@@ -29,11 +25,9 @@ if (!fs.existsSync(runsFile)) {
   fs.writeFileSync(runsFile, "[]")
 }
 
-// routes
 app.use("/api/run", runRoutes)
 app.use("/api/history", historyRoutes)
 
-// serve reports
 app.use(
   "/reports",
   express.static(path.join(__dirname, "storage/results"))
