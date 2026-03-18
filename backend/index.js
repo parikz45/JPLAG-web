@@ -3,6 +3,11 @@ const cors = require("cors")
 const path = require("path")
 const fs = require("fs")
 
+app.use((req, res, next) => {
+  console.log("Incoming request:", req.method, req.url)
+  next()
+})
+
 const runRoutes = require("./routes/run.routes")
 const historyRoutes = require("./routes/history.routes")
 

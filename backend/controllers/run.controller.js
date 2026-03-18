@@ -3,6 +3,12 @@ const fs = require("fs")
 const { executeJplag } = require("../services/jplag.service")
 
 exports.runJplag = async (req, res) => {
+  console.log("RUN ENDPOINT HIT")
+  console.log("FILES:", req.files)
+  console.log("BODY:", req.body)
+}
+
+exports.runJplag = async (req, res) => {
   try {
 
     if (!req.files || !req.files.jar || !req.files.submissions) {
@@ -41,6 +47,10 @@ exports.runJplag = async (req, res) => {
       const dest = path.join(submissionsFolder, file.originalname)
       fs.renameSync(file.path, dest)
     }
+
+    console.log("Jar path:", jarFile.path)
+    console.log("Submissions folder:", submissionsFolder)
+    console.log("Result path:", resultPath)
 
     await executeJplag(
       config,

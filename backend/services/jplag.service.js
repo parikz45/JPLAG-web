@@ -3,7 +3,9 @@ const { spawn } = require("child_process")
 exports.executeJplag = (config, jarPath, submissionsPath, resultPath) => {
 
     return new Promise((resolve, reject) => {
-
+        console.log("Starting JPlag execution")
+        console.log("Args:", args)
+        
         const args = []
 
         args.push("-jar", jarPath)
