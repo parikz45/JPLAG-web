@@ -4,8 +4,6 @@ exports.executeJplag = (config, jarPath, submissionsPath, resultPath) => {
 
     return new Promise((resolve, reject) => {
         console.log("Starting JPlag execution")
-        console.log("Args:", args)
-        
         const args = []
 
         args.push("-jar", jarPath)
@@ -84,6 +82,8 @@ exports.executeJplag = (config, jarPath, submissionsPath, resultPath) => {
                 reject(new Error("JPlag failed"))
 
         })
+
+        console.log("Args:", args)
 
     })
 
