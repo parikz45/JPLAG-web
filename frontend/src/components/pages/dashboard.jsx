@@ -25,7 +25,7 @@ import {
 
 import ThemeToggle from "../themetoggle/Themetoggle"
 
-const API = "https://jplag-web.onrender.com"
+const API = "https://jplag.onrender.com"
 
 export default function Dashboard() {
 
