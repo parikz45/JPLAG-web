@@ -32,6 +32,10 @@ const upload = multer({
 
 router.post(
   "/",
+  (req, res, next) => {
+    console.log("POST /api/run received");
+    next();
+  },
   upload.fields([
     { name: "jar", maxCount: 1 },
     { name: "submissions", maxCount: 500 }
