@@ -1,10 +1,12 @@
-# Use Node 22 base image
-FROM node:22-bookworm
+# Base image with Java 21 already installed
+FROM eclipse-temurin:21-jdk
 
-# Install Java 21 (required for latest JPlag)
-RUN apt-get update && apt-get install -y openjdk-21-jdk-headless
+# Install Node.js (needed for your Express backend)
+RUN apt-get update \
+ && apt-get install -y nodejs npm \
+ && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Create working directory
 WORKDIR /app
 
 # Copy project files
@@ -14,8 +16,8 @@ COPY . .
 WORKDIR /app/backend
 RUN npm install
 
-# Expose backend port
+# Expose Express port
 EXPOSE 10000
 
-# Start the backend server
+# Start backend
 CMD ["node", "index.js"]
