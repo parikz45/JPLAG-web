@@ -1,7 +1,7 @@
 FROM node:22
 
 # Install Java (OpenJDK 17)
-RUN apt-get update && apt-get install -y openjdk-17-jdk
+RUN apt-get update && apt-get install -y openjdk-21-jdk
 
 # Create app directory
 WORKDIR /app
