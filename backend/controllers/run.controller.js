@@ -3,13 +3,8 @@ const fs = require("fs")
 const { executeJplag } = require("../services/jplag.service")
 
 exports.runJplag = async (req, res) => {
-  console.log("RUN ENDPOINT HIT")
-  console.log("FILES:", req.files)
-  console.log("BODY:", req.body)
-}
-
-exports.runJplag = async (req, res) => {
   try {
+    console.log("POST /api/run received")
 
     if (!req.files || !req.files.jar || !req.files.submissions) {
       return res.status(400).json({
@@ -31,18 +26,24 @@ exports.runJplag = async (req, res) => {
 
     const submissionsFolder = path.join(
       __dirname,
-      "../storage/uploads/run-" + runId
+      "..",
+      "storage",
+      "uploads",
+      "run-" + runId
     )
 
     const resultPath = path.join(
       __dirname,
-      "../storage/results/run-" + runId
+      "..",
+      "storage",
+      "results",
+      "run-" + runId
     )
 
     fs.mkdirSync(submissionsFolder, { recursive: true })
     fs.mkdirSync(resultPath, { recursive: true })
 
-    // move submission files
+    // Move submission files
     for (const file of submissions) {
       const dest = path.join(submissionsFolder, file.originalname)
       fs.renameSync(file.path, dest)
@@ -52,6 +53,7 @@ exports.runJplag = async (req, res) => {
     console.log("Submissions folder:", submissionsFolder)
     console.log("Result path:", resultPath)
 
+    // Run JPlag
     await executeJplag(
       config,
       jarFile.path,
@@ -61,22 +63,36 @@ exports.runJplag = async (req, res) => {
 
     const zipName = `run-${runId}.zip`
 
-    const historyPath = path.join(__dirname, "../storage/runs.json")
+    const historyPath = path.join(
+      __dirname,
+      "..",
+      "storage",
+      "runs.json"
+    )
+
+    console.log("Updating history file:", historyPath)
 
     let runs = []
 
     if (fs.existsSync(historyPath)) {
-      runs = JSON.parse(fs.readFileSync(historyPath, "utf-8"))
+      try {
+        runs = JSON.parse(fs.readFileSync(historyPath, "utf-8"))
+      } catch (e) {
+        console.error("Error reading runs.json, resetting file")
+        runs = []
+      }
     }
 
     runs.push({
       id: runId,
-      language: config.language,
+      language: config.language || "unknown",
       zip: zipName,
-      timestamp: new Date()
+      timestamp: new Date().toISOString()
     })
 
     fs.writeFileSync(historyPath, JSON.stringify(runs, null, 2))
+
+    console.log("History updated. Total runs:", runs.length)
 
     res.json({
       success: true,
