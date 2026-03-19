@@ -16,6 +16,8 @@ app.use(cors())
 
 app.use(express.json())
 
+global.runs = []
+
 const storagePath = path.join(__dirname, "storage")
 const uploadsPath = path.join(storagePath, "uploads")
 const resultsPath = path.join(storagePath, "results")

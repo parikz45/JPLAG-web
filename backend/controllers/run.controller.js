@@ -63,36 +63,19 @@ exports.runJplag = async (req, res) => {
 
     const zipName = `run-${runId}.zip`
 
-    const historyPath = path.join(
-      __dirname,
-      "..",
-      "storage",
-      "runs.json"
-    )
-
-    console.log("Updating history file:", historyPath)
-
-    let runs = []
-
-    if (fs.existsSync(historyPath)) {
-      try {
-        runs = JSON.parse(fs.readFileSync(historyPath, "utf-8"))
-      } catch (e) {
-        console.error("Error reading runs.json, resetting file")
-        runs = []
-      }
+    // ✅ In-memory history (NO FILE SYSTEM)
+    if (!global.runs) {
+      global.runs = []
     }
 
-    runs.push({
+    global.runs.push({
       id: runId,
       language: config.language || "unknown",
       zip: zipName,
       timestamp: new Date().toISOString()
     })
 
-    fs.writeFileSync(historyPath, JSON.stringify(runs, null, 2))
-
-    console.log("History updated. Total runs:", runs.length)
+    console.log("History updated. Total runs:", global.runs.length)
 
     res.json({
       success: true,
