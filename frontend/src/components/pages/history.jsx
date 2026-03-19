@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge"
 
 import ThemeToggle from "../themetoggle/Themetoggle"
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000"
+const API = "https://jplag.onrender.com"
 
 export default function History() {
 
